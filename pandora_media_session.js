@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Pandora MediaSession Support
-// @version      0.2
+// @version      0.3.1
 // @description  Implements the MediaSession API for Pandora.
 // @author       Aaron Landwehr
 // @match        https://www.pandora.com/*
@@ -24,7 +24,7 @@
 
     function lazyTimer() {
         updateMetadata();
-        setTimeout(lazyTimer, 5000);
+        setTimeout(lazyTimer, 100);
     }
 
     function updateMetadata() {
@@ -40,26 +40,30 @@
         }
 
         // Populate metadata.
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: title,
-            artist: artist,
-            album: album,
-            artwork: [{ src: art, sizes: '128x128', type: 'image/jpeg' }]
-        });
+        var metadata = navigator.mediaSession.metadata;
+        if (!metadata || (
+            metadata.title != title || metadata.artist != artist ||
+            metadata.album != album || metadata.art != art)) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: title,
+                artist: artist,
+                album: album,
+                artwork: [{ src: art, sizes: '500x500', type: 'image/jpeg' }]
+            });
+        }
 
         // Check status of playback and correct media-session info if necessary.
         var e = document.getElementsByClassName("PlayButton");
         if (e && e[0]) {
-            if (e[0].getAttribute('data-qa') == "pause_button") {
+            e = e[0].getAttribute('data-qa');
+            if (e == "pause_button") {
                 audio.play();
                 navigator.mediaSession.playbackState = "playing";
-            } else {
+            } else if (e == "play_button") {
                 audio.pause();
                 navigator.mediaSession.playbackState = "paused";
             }
         }
-
-
     }
 
     // Some helper.
@@ -92,7 +96,6 @@
         audio.currentTime = 0;
         audio.play();
         simulateClick("PlayButton"); // Everywhere button.
-        setTimeout(updateMetadata, 500);
         navigator.mediaSession.playbackState = "playing";
     });
 
@@ -101,7 +104,6 @@
         audio.currentTime = 0;
         audio.pause();
         simulateClick("PlayButton"); // Everywhere button.
-        setTimeout(updateMetadata, 500);
         navigator.mediaSession.playbackState = "paused";
     });
 
@@ -111,7 +113,6 @@
         audio.play();
         simulateClick("ReplayButton"); // Station button.
         simulateClick("Tuner__Control__SkipBack__Button"); // playlist button.
-        setTimeout(updateMetadata, 500);
         navigator.mediaSession.playbackState = "playing";
     });
 
@@ -121,7 +122,6 @@
         audio.play();
         simulateClick("Tuner__Control__Skip__Button"); // Station button.
         simulateClick("Tuner__Control__SkipForward__Button"); // playlist button.
-        setTimeout(updateMetadata, 500);
         navigator.mediaSession.playbackState = "playing";
     });
 })();
