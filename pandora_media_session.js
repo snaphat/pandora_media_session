@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Pandora MediaSession Support
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.1.1
 // @description  Implements the MediaSession API for Pandora.
 // @author       Aaron Landwehr
 // @match        https://www.pandora.com/*
