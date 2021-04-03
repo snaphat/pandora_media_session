@@ -1,6 +1,6 @@
-# pandora_media_session userscript
+# Pandora Media Session Support
 ## About
-Userscript implementing the [Web Media Session API](https://developer.mozilla.org/en-US/docs/Web/API/Media_Session_API) for Pandora.
+Userscript implementing the [Web Media Session API](https://developer.mozilla.org/en-US/docs/Web/API/Media_Session_API) for [Pandora Radio](https://pandora.com).
 
 - Allows for media notifications to integrate with Windows/Linux.
 - Supports showing the song title, artist, album, and album art.
