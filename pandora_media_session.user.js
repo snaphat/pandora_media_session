@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Pandora MediaSession Support
 // @namespace    https://github.com/snaphat/pandora_media_session
-// @version      0.3.4
+// @version      0.3.5
 // @description  Implements the MediaSession API for Pandora.
 // @author       Aaron Landwehr
-// @match        https://www.pandora.com/*
+// @match        *://*.pandora.com/*
 // @grant        None
 // ==/UserScript==
 // Note: document-idle breaks this script for firefox.
