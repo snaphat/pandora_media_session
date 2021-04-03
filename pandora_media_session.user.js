@@ -6,8 +6,8 @@
 // @author       Aaron Landwehr
 // @match        https://www.pandora.com/*
 // @grant        None
-// @run-at      document-idle
 // ==/UserScript==
+// Note: document-idle breaks this script for firefox.
 
 (function () {
     'use strict';
@@ -61,7 +61,7 @@
             if (e && e[0]) {
                 e = e[0].getAttribute('data-qa');
                 if (e == "pause_button") {
-                    audio.play().then(_ => { }).catch(error => { });
+                    audio.play().then(_ => { if (audio.currentTime > 1.0) { audio.muted = true; } }).catch(error => { });
                 } else if (e == "play_button") {
                     audio.pause();
                 }
