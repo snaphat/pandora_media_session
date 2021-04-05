@@ -6,7 +6,7 @@ Extension and userscript implementing the [Web Media Session API](https://develo
 - Supports showing the song title, artist, album, and album art.
 
 There are two ways to install the script.
-* As an [extension](#extension-installation) for Chrome (pending review), Edge (pending review), and Firefox (pending review), or directly.
+* As an [extension](#extension-installation) for Chrome (pending review), Edge (pending review), and [Firefox](https://addons.mozilla.org/en-US/firefox/addon/pandora_media_session_support/), or [directly](https://github.com/snaphat/pandora_media_session_packager/releases).
 * As a [userscript](#userscript-installation).
 
 ## Extension Installation
