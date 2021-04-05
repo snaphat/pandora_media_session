@@ -1,11 +1,25 @@
 # Pandora Media Session Support
 ## About
-Userscript implementing the [Web Media Session API](https://developer.mozilla.org/en-US/docs/Web/API/Media_Session_API) for [Pandora Radio](https://pandora.com).
+Extension and userscript implementing the [Web Media Session API](https://developer.mozilla.org/en-US/docs/Web/API/Media_Session_API) for [Pandora Radio](https://pandora.com).
 
 - Allows for media notifications to integrate with Windows/Linux.
 - Supports showing the song title, artist, album, and album art.
 
-## Installation
+There are two ways to install the script.
+* As an [extension](#extension-installation) for Chrome (pending review), Edge (pending review), and Firefox (pending review), or directly.
+* As a [userscript](#userscript-installation).
+
+## Extension Installation
+* Chrome users:
+  * Click here (TBD) to install from the Chrome Web Store website.
+* Edge Users:
+  * Click here (TBD) to install from the Edge-Addons website.
+* Firefox Users:
+  * Click here (TBD) to install from the Edge-Addons website.
+* Unpacked Extension:
+  * Click [here](https://github.com/snaphat/pandora_media_session_packager/releases) to download.
+
+## Userscript Installation
 ### Step 1: Install a user-script manager
 * Chrome Users:
   * Install [ViolentMonkey](https://chrome.google.com/webstore/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag), or [TamperMonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo).
