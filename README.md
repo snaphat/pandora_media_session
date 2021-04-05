@@ -24,3 +24,5 @@ Userscript implementing the [Web Media Session API](https://developer.mozilla.or
 #### Example in Ubuntu:
 <img alt="Ubuntu Media Session OSD" src="https://github.com/snaphat/pandora_media_session/blob/assets/ubuntu_osd.png?raw=true" width="50%">
   
+## Video
+[![Watch the video](https://img.youtube.com/vi/B4Q4Jp0iiYc/hqdefault.jpg)](https://www.youtube.com/watch?v=B4Q4Jp0iiYc)
