@@ -15,7 +15,7 @@ There are two ways to install the script.
 * Edge Users:
   * Click here (TBD) to install from the Edge-Addons website.
 * Firefox Users:
-  * Click [here](https://addons.mozilla.org/en-US/firefox/addon/pandora_media_session_support/) to install from the Edge-Addons website.
+  * Click [here](https://addons.mozilla.org/en-US/firefox/addon/pandora_media_session_support/) to install from the Firefox-Addons website.
 * Unpacked Extension:
   * Click [here](https://github.com/snaphat/pandora_media_session_packager/releases) to download.
 
