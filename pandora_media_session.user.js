@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Pandora MediaSession Support
+// @name         Pandora Media Session Support
 // @namespace    https://github.com/snaphat/pandora_media_session
-// @version      0.3.7
-// @description  Implements the MediaSession API for Pandora.
+// @version      0.3.8
+// @description  Shows media session information from Pandora Radio.
 // @author       Aaron Landwehr
 // @icon         https://raw.githubusercontent.com/snaphat/pandora_media_session_packager/main/assets/pandora_64x64.png
 // @match        *://*.pandora.com/*
