@@ -6,7 +6,7 @@
 // @author       Aaron Landwehr
 // @icon         https://raw.githubusercontent.com/snaphat/pandora_media_session_packager/main/assets/pandora_64x64.png
 // @match        *://*.pandora.com/*
-// @grant        None
+// @grant        none
 // ==/UserScript==
 // Note: document-idle breaks this script for firefox.
 
