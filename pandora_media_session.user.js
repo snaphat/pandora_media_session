@@ -13,11 +13,11 @@
 (function () {
     'use strict';
 
-    // Add event listener.
-    window.addEventListener('load', function () { setTimeout(lazyTimer, 500); });
-    function lazyTimer() {
+    // Add metadata update timer.
+    setTimeout(updateTimer, 100);
+    function updateTimer() {
         updateMetadata();
-        setTimeout(lazyTimer, 100);
+        setTimeout(updateTimer, 100);
     }
 
     function updateMetadata() {
