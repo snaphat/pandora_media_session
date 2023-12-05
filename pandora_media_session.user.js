@@ -56,7 +56,7 @@
                 e = e[0].getAttribute('data-qa');
                 if (e == "pause_button") {
                     navigator.mediaSession.playbackState = "playing";
-                    audio.play().then(_ => { if (audio.currentTime > 1.0) { audio.muted = true; } }).catch(error => { });
+                    audio.play();
                 } else if (e == "play_button") {
                     navigator.mediaSession.playbackState = "paused";
                     audio.pause();
