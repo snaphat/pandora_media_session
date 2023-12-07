@@ -255,6 +255,15 @@ function setupMediaSessionEventHandlers(stubAudio) {
     });
 }
 
+/**
+ * Initializes the functionality for enhancing media session support.
+ * This function performs several key tasks:
+ * 1. Adds a stub audio element to the DOM for maintaining consistent media session.
+ * 2. Sets up a MutationObserver to watch for changes in the DOM, specifically for new audio elements.
+ * 3. Attaches custom play/pause handling to all audio elements to synchronize them with the stub audio.
+ * 4. Periodically updates media metadata based on the current state of the real audio elements.
+ * 5. Sets up handlers for media session events like play, pause, next track, and previous track.
+ */
 function initialize() {
     /**
      * Adds a 'stub' audio element to the DOM.
@@ -277,29 +286,45 @@ function initialize() {
      */
     let observer = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
+            // Processes new audio elements added to the DOM
             mutation.addedNodes.forEach(node => {
                 if (node.nodeName === 'AUDIO') overloadRealAudioPlayPause(node, stubAudio);
             });
 
+            // Updates stub audio state based on attribute changes
             if (mutation.type === 'attributes' && mutation.attributeName == "data-qa") {
                 updateStubAudioState(mutation, stubAudio);
             }
         });
     });
 
-    // Observer configuration and initiation
+    // Start observing the document body for DOM changes
     observer.observe(document.body, { attributes: true, childList: true, subtree: true });
 
-    // Overload play/pause for existing audio elements
+    // Attaches custom play/pause handling to all existing audio elements
     document.querySelectorAll('audio').forEach(realAudio => { overloadRealAudioPlayPause(realAudio, stubAudio); });
 
-    // Periodically update media metadata
+    // Periodically updates media metadata
     setInterval(updateMetadata, 100);
 
-    // Setup media session controls
+    // Sets up media session event handlers
     setupMediaSessionEventHandlers(stubAudio);
 }
 
+// This self-invoking function ensures that the initialization process
+// starts at the right time in the document's loading phase.
 (function () {
+    /**
+     * Checks if the document body is already available. If it is, 
+     * it means the DOM is sufficiently loaded to run the initialize function.
+     * If the document body isn't available yet, it adds an event listener 
+     * for the 'DOMContentLoaded' event. This event fires when the initial 
+     * HTML document has been completely loaded and parsed, without waiting 
+     * for stylesheets, images, and subframes to finish loading.
+     * 
+     * The initialize function is then executed either immediately (if the 
+     * document body is available) or after the 'DOMContentLoaded' event fires,
+     * ensuring that the initialization logic runs at the appropriate time.
+     */
     document.body ? initialize() : document.addEventListener('DOMContentLoaded', initialize);
 })();
