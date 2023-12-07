@@ -255,7 +255,7 @@ function setupMediaSessionEventHandlers(stubAudio) {
     });
 }
 
-(function () {
+function initialize() {
     /**
      * Adds a 'stub' audio element to the DOM.
      * This stub audio is a small, silent audio file used to trick browsers like Firefox
@@ -298,4 +298,8 @@ function setupMediaSessionEventHandlers(stubAudio) {
 
     // Setup media session controls
     setupMediaSessionEventHandlers(stubAudio);
+}
+
+(function () {
+    document.body ? initialize() : document.addEventListener('DOMContentLoaded', initialize);
 })();
