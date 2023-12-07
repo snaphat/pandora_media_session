@@ -69,16 +69,16 @@ function getText(cls) {
 
 function updateMetadata() {
     // Retrieve music information.
-    var title = getText('Tuner__Audio__TrackDetail__title');
-    var artist = getText('Tuner__Audio__TrackDetail__artist');
-    var album = getText('nowPlayingTopInfo__current__albumName');
-    var art = getArt('Tuner__Audio__TrackDetail__img');
+    let title = getText('Tuner__Audio__TrackDetail__title');
+    let artist = getText('Tuner__Audio__TrackDetail__artist');
+    let album = getText('nowPlayingTopInfo__current__albumName');
+    let art = getArt('Tuner__Audio__TrackDetail__img');
 
     // Get higher quality artwork if possible.
     if (art) art = art.replace("90W", "500W").replace("90H", "500H");
 
     // Populate metadata.
-    var metadata = navigator.mediaSession.metadata;
+    let metadata = navigator.mediaSession.metadata;
     if (!metadata || (
         metadata.title != title || metadata.artist != artist ||
         metadata.album != album || metadata.art != art)) {
@@ -92,15 +92,9 @@ function updateMetadata() {
 }
 
 function simulateClick(cls) {
-    let clickEvent = new MouseEvent('click', {
-        view: null,
-        bubbles: true,
-        cancelable: true
-    });
+    let clickEvent = new MouseEvent('click', { view: null, bubbles: true, cancelable: true });
     let e = document.getElementsByClassName(cls)[0];
-    if (e) {
-        e.dispatchEvent(clickEvent);
-    }
+    if (e) e.dispatchEvent(clickEvent);
 }
 
 function setupMediaSessionEventHandlers(stubAudio)
