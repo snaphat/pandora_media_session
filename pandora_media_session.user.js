@@ -17,47 +17,37 @@ function willOrIsPlayingPageAudio() {
 }
 
 /**
- * Overloads the play and pause methods of a stub audio element.
+ * Overloads the play method of a stub audio element.
  *
- * The function modifies the play and pause behavior of the provided audio
- * element. It ensures that play is only invoked if no other page audio is
- * currently playing. Additionally, it manages the playback state in the
- * browser's media session.
+ * This function redefines the play behavior of the provided audio element. It checks if any other audio
+ * on the page is currently playing. The play method of the stub audio is invoked only if no other
+ * audio is playing, ensuring exclusive playback. If invoked, it calls the original play method of the
+ * stub audio. Additionally, it handles any promise returned by the play method and updates the reference
+ * to the last audio played.
  *
- * @param {HTMLAudioElement} stubAudio - The audio element whose play and pause
- *                                       methods are to be overloaded.
+ * @param {HTMLAudioElement} stubAudio - The audio element whose play method is to be overloaded.
+ * @param {HTMLAudioElement} lastPlayingAudio - A reference to the last audio element that was played, which will be updated.
  */
-function overloadStubAudioPlayPause(stubAudio) {
-    // Store original play and pause methods
+function overloadStubAudioPlay(stubAudio, lastPlayingAudio) {
+    // Store original play method
     let playMethod = stubAudio.play;
-    let pauseMethod = stubAudio.pause;
 
     // Overload the play method
     stubAudio.play = () => {
         // Play the audio only if no other page audio is playing
         if (!willOrIsPlayingPageAudio()) {
+            // Call the original play method and store its return value
             let playPromise = playMethod.call(stubAudio);
 
             // Handle the promise returned by the play method
-            if (playPromise !== undefined) {
-                playPromise.catch(error => { });
-            }
+            if (playPromise !== undefined) { playPromise.catch(error => { }); }
 
-            // Update the media session's playback state to 'playing'
-            navigator.mediaSession.playbackState = "playing";
+            // Update the last playing audio reference
+            lastPlayingAudio = stubAudio;
 
-            // Mark the stub audio file as being the last to play.
-            stubAudio.isLastPlaying = true;
+            // Return the original method's return value
+            return playPromise;
         }
-    };
-
-    // Overload the pause method
-    stubAudio.pause = () => {
-        // Call the original pause method
-        pauseMethod.call(stubAudio);
-
-        // Update the media session's playback state to 'paused'
-        navigator.mediaSession.playbackState = "paused";
     };
 }
 
@@ -65,18 +55,18 @@ function overloadStubAudioPlayPause(stubAudio) {
 /**
  * Overloads the play and pause methods of a real audio element.
  *
- * This function modifies the play and pause behavior of a given real audio
- * element. It ensures that when the real audio element is played, any stub
- * audio is paused, and the media session's playback state is updated
- * accordingly. The function also maintains a flag (`willOrIsPlaying`) on the
- * real audio element to track its playback state.
+ * This function modifies the play and pause behavior of a given real audio element.
+ * When the real audio's play method is invoked, it sets a flag (`willOrIsPlaying`) to indicate 
+ * the audio is playing or will play, and pauses any stub audio. This ensures exclusive playback 
+ * and synchronizes the playback states of real and stub audio. The function also updates 
+ * `lastPlayingAudio` to keep track of the currently or last played audio element.
+ * The pause method is similarly overloaded to reset the playback state flag.
  *
- * @param {HTMLAudioElement} realAudio - The real audio element whose play and
- *                                       pause methods are to be overloaded.
- * @param {HTMLAudioElement} stubAudio - The stub audio element that should be
- *                                       paused when the real audio is played.
+ * @param {HTMLAudioElement} realAudio - The real audio element whose play and pause methods are to be overloaded.
+ * @param {HTMLAudioElement} stubAudio - The stub audio element that should be paused when the real audio is played.
+ * @param {HTMLAudioElement} lastPlayingAudio - Reference to the last played audio, updated when this audio is played.
  */
-function overloadRealAudioPlayPause(realAudio, stubAudio) {
+function overloadRealAudioPlayPause(realAudio, stubAudio, lastPlayingAudio) {
     // Store the original play and pause methods
     let playMethod = realAudio.play;
     let pauseMethod = realAudio.pause;
@@ -90,16 +80,16 @@ function overloadRealAudioPlayPause(realAudio, stubAudio) {
         stubAudio.pause();
 
         // Call the original play method and store its return value
-        let returnValue = playMethod.call(realAudio);
+        let playPromise = playMethod.call(realAudio);
 
-        // Update the media session's playback state to 'playing'
-        navigator.mediaSession.playbackState = "playing";
+        // Handle the promise returned by the play method
+        if (playPromise !== undefined) { playPromise.catch(error => { }); }
 
-        // Mark the stub audio file as not being the last to play.
-        stubAudio.isLastPlaying = false;
+        // Update the last playing audio reference
+        lastPlayingAudio = realAudio;
 
         // Return the original method's return value
-        return returnValue;
+        return playPromise;
     };
 
     // Overload the pause method
@@ -112,27 +102,32 @@ function overloadRealAudioPlayPause(realAudio, stubAudio) {
 
         // Call the original pause method
         pauseMethod.call(realAudio);
-
-        // Update the media session's playback state to 'paused'
-        navigator.mediaSession.playbackState = "paused";
     };
 }
 
 /**
  * Updates the playback state of the stub audio based on the attributes of a given element.
  *
- * This function examines the 'data-qa' attribute of the provided DOM element. If the attribute's
- * value is 'play_button', the stub audio is played. Otherwise, the stub audio is paused.
- * This allows for dynamic control of the stub audio's playback state in response to changes
- * in the DOM.
+ * This function checks the 'data-qa' attribute of the specified DOM element. If the attribute's
+ * value is 'play_button', the stub audio attempts to play, respecting the current playback context
+ * (i.e., it won't play if other audio is currently playing). Otherwise, the stub audio is paused.
+ * Additionally, it updates the playback state in the browser's media session to reflect this change.
+ * This mechanism allows dynamic control of the stub audio's playback in response to DOM interactions.
  *
  * @param {Element} element - The DOM element whose attributes are checked to determine the audio state.
  * @param {HTMLAudioElement} stubAudio - The stub audio element whose playback state will be modified.
  */
 function updateStubAudioState(element, stubAudio) {
     // Play or pause the stub audio based on the 'data-qa' attribute value of the element
-    element.getAttribute('data-qa') === 'play_button' ? stubAudio.play() : stubAudio.pause();
+    if(element.getAttribute('data-qa') === 'play_button') {
+        stubAudio.play(); // Attempt to play; contingent on other audio state
+        navigator.mediaSession.playbackState = "playing";
+    } else {
+        stubAudio.pause();
+        navigator.mediaSession.playbackState = "paused";
+    }
 }
+
 /**
  * Retrieves the source URL of the first image within the first element of a given class.
  *
@@ -224,39 +219,42 @@ function simulateClick(cls) {
 /**
  * Sets up media session action handlers to control audio playback.
  *
- * This function configures the action handlers for the browser's media session.
- * It allows the media session to control audio playback through standard media
- * controls such as play, pause, previous track, and next track. These controls
- * are tied to DOM elements through simulated click events, enabling the media
- * session to interact with a web page's custom audio controls.
+ * This function configures the action handlers for the browser's media session, enabling
+ * control over audio playback through standard media controls such as play, pause, 
+ * previous track, and next track. The play and pause actions are linked to simulated 
+ * click events on specific DOM elements representing these controls, allowing integration 
+ * with custom audio controls on the web page. Additionally, it directly controls the playback 
+ * of the last played audio element to synchronize the on-screen display (OSD) with user 
+ * interactions. Handlers for previous and next tracks trigger corresponding simulated clicks 
+ * on relevant buttons.
  *
- * @param {HTMLAudioElement} stubAudio - The stub audio element which is controlled by the media session.
+ * @param {HTMLAudioElement} lastPlayingAudio - A reference to the last audio element that was played, 
+ *                                              used to directly control its playback state.
  */
-function setupMediaSessionEventHandlers(stubAudio) {
+function setupMediaSessionEventHandlers(lastPlayingAudio) {
     // Set action handler for 'play' action
     navigator.mediaSession.setActionHandler('play', () => {
-        simulateClick("PlayButton"); // Simulates click on the Play button (it's class is PlayButton).
-        // Short-circuit playing of the stub if it was the last playing so that the OSD changes instantly.
-        // For non-stub audio streams this will cause the OSD to pause-play-pause-play.
-        if(stubAudio.isLastPlaying) stubAudio.play();
+        simulateClick("PlayButton"); // Simulates a click on the Play button
+        lastPlayingAudio.play(); // Immediately play last audio to keep it synchronized with the mediaSession state.
+        navigator.mediaSession.playbackState = "playing"; // Updates the media session's playback state to 'playing'.
     });
 
     // Set action handler for 'pause' action
     navigator.mediaSession.setActionHandler('pause', () => {
-        simulateClick("PlayButton"); // Simulates click on the Pause button (it's class is PlayButton).
-        // For non-stub audio streams this will cause the OSD to pause-play-pause-play.
-        if(stubAudio.isLastPlaying) stubAudio.pause();
+        simulateClick("PlayButton"); // Simulates a click on the Pause button
+        lastPlayingAudio.pause(); // Immediately pause last audio to keep it synchronized with the mediaSession state. 
+        navigator.mediaSession.playbackState = "paused"; // Updates the media session's playback state to 'paused'.
     });
 
     // Set action handler for 'previoustrack' (previous track or replay)
     navigator.mediaSession.setActionHandler('previoustrack', () => {
-        simulateClick("ReplayButton"); // Simulates click on the Replay button (Station)
+        simulateClick("ReplayButton"); // Simulates a click on the Replay button (Station)
         simulateClick("Tuner__Control__SkipBack__Button"); // Simulates click on the Skip Back button (Playlist)
     });
 
     // Set action handler for 'nexttrack' (next track)
     navigator.mediaSession.setActionHandler('nexttrack', () => {
-        simulateClick("Tuner__Control__Skip__Button"); // Simulates click on the Skip button (Station)
+        simulateClick("Tuner__Control__Skip__Button"); // Simulates a click on the Skip button (Station)
         simulateClick("Tuner__Control__SkipForward__Button"); // Simulates click on the Skip Forward button (Playlist)
     });
 }
@@ -265,17 +263,18 @@ function setupMediaSessionEventHandlers(stubAudio) {
  * Initializes the functionality for enhancing media session support.
  * 1. Creates and adds a stub audio element to the DOM. This element is used to maintain a consistent media session
  *    and to enable On-Screen Display (OSD) features in browsers like Firefox.
- * 2. Sets up a MutationObserver to monitor DOM changes, for the addition of new audio elements and the removal of
- *    'PlayButton' elements. The observer calls 'overloadRealAudioPlayPause' for each added audio element to modify
- *    its play/pause functionality and 'updateStubAudioState' for each removed 'PlayButton' element to adjust the
- *    playback state of 'stubAudio'.
- * 3. Attaches custom play/pause handling to all existing and future audio elements in the DOM.
- * 4. Sets up a routine to periodically update media metadata based on the state of the real audio elements.
- * 5. Configures media session event handlers for actions like play, pause, next track, and previous track.
+ * 2. Sets up a MutationObserver to monitor DOM changes for new audio elements and the removal of 'PlayButton' elements.
+ *    It modifies the play/pause functionality of added audio elements and adjusts the playback state of 'stubAudio'
+ *    when 'PlayButton' elements are removed.
+ * 3. Attaches custom play/pause handling to all existing and dynamically added audio elements, managing playback via
+ *    the last audio element that was played, tracked by the 'lastPlayingAudio' variable.
+ * 4. Periodically updates media metadata based on the state of the real audio elements.
+ * 5. Configures media session event handlers for actions like play, pause, next track, and previous track, which also
+ *    interact with the last played audio element to synchronize the media session's state.
  */
 function initialize() {
     /**
-     * Adds a 'stub' audio element to the DOM.
+     * Add a 'stub' audio element to the DOM.
      * This stub audio is a small, silent audio file used to trick browsers like Firefox
      * into thinking there is always an audio element playing. This is necessary for enabling
      * On-Screen Display (OSD) features, as some browsers require an actual audio file to be playing.
@@ -285,28 +284,24 @@ function initialize() {
     stubAudio.loop = true;
     stubAudio.volume = 0.1;
     stubAudio.src = "data:audio/ogg;base64,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";
-    overloadStubAudioPlayPause(stubAudio);
 
-    /**
-     * Sets up a MutationObserver to monitor DOM changes for audio playback control.
-     * The observer reacts to two scenarios:
-     * 1. The addition of 'AUDIO' elements: It calls 'overloadRealAudioPlayPause' to modify 
-     *    their play/pause functionality.
-     * 2. The removal of 'BUTTON' elements with the 'PlayButton' class: It calls 
-     *    'updateStubAudioState' to adjust the playback state of 'stubAudio'.
-     * This ensures the playback state of 'stubAudio' aligns with the current DOM after
-     * changes in audio control elements.
-     */
+    // Initialize lastPlayingAudio with stubAudio.
+    let lastPlayingAudio = stubAudio;
+
+    // Overload the stub audio play method.
+    overloadStubAudioPlay(stubAudio, lastPlayingAudio);
+
+    // Set up a MutationObserver to monitor DOM changes for audio playback control.
     let observer = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
-            // Processes new audio elements added to the DOM
+            // Process new audio elements added to the DOM
             mutation.addedNodes.forEach(node => {
                 if (node.nodeName === 'AUDIO') {
-                    overloadRealAudioPlayPause(node, stubAudio);
+                    overloadRealAudioPlayPause(node, stubAudio, lastPlayingAudio);
                 }
             });
 
-            // Checks for removed 'PlayButton' elements to trigger an audio state update
+            // Check for removed 'PlayButton' elements to trigger an audio state update
             mutation.removedNodes.forEach(node => {
                 if (node.nodeName === 'BUTTON' && node.classList.contains('PlayButton')) {
                     updateStubAudioState(node, stubAudio);
@@ -325,7 +320,7 @@ function initialize() {
     setInterval(updateMetadata, 100);
 
     // Sets up media session event handlers
-    setupMediaSessionEventHandlers(stubAudio);
+    setupMediaSessionEventHandlers(lastPlayingAudio);
 }
 
 // This self-invoking function ensures that the initialization process
