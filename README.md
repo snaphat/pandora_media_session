@@ -14,6 +14,8 @@ There are two ways to install the script.
   * Click [here](https://chrome.google.com/webstore/detail/pandora-media-session-sup/odjlgdgkahiehepabfdddaapbdficekj) to install from the Chrome Web Store website.
 * Edge Users:
   * Click [here](https://microsoftedge.microsoft.com/addons/detail/ikjcpnihjpkdjgaocoicbacehipaaecc) to install from the Edge-Addons website.
+* Opera Users:
+  * Click [here]() to install from the Opera-Addons website. 
 * Firefox Users:
   * Click [here](https://addons.mozilla.org/en-US/firefox/addon/pandora_media_session_support/) to install from the Firefox-Addons website.
 * Unpacked Extension:
