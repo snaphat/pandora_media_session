@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Pandora Media Session Support
 // @namespace    https://github.com/snaphat/pandora_media_session
-// @version      0.4.1
+// @version      0.4.2
 // @description  Shows media session information from Pandora Radio.
 // @author       Aaron Landwehr
 // @icon         https://raw.githubusercontent.com/snaphat/pandora_media_session_packager/main/assets/pandora_64x64.png
@@ -33,7 +33,7 @@ function isPlayingPageAudio() {
  * @param {HTMLAudioElement} stubAudio - The stub audio element whose playback state will be modified.
  */
 function addPlayEventListenerToStubAudio(stubAudio) {
-    stubAudio.addEventListener("play", () => { 
+    stubAudio.addEventListener("play", () => {
         stubAudio.playedLast = true; // Mark the stub audio as played last
     });
 }
@@ -51,7 +51,7 @@ function addPlayEventListenerToStubAudio(stubAudio) {
  */
 
 function addPlayEventListenerToPageAudio(pageAudio, stubAudio) {
-    pageAudio.addEventListener('play', () => {  
+    pageAudio.addEventListener('play', () => {
         stubAudio.playedLast = false; // Mark the stub audio as not played last
         stubAudio.pause(); // Prevent the stub audio from playing simultaneously with the page audio.
     });
@@ -73,7 +73,7 @@ function addPlayEventListenerToPageAudio(pageAudio, stubAudio) {
 
 function updateStubAudioState(element, stubAudio) {
     // Play or pause the stub audio based on the 'data-qa' attribute value of the element
-    if(element.getAttribute('data-qa') === 'play_button') {
+    if (element.getAttribute('data-qa') === 'play_button') {
         if (!isPlayingPageAudio()) {
             stubAudio.play(); // Play if no other audio is playing
         }
@@ -180,7 +180,7 @@ function setupMediaSessionEventHandlers(stubAudio) {
     // Set action handler for 'play' action
     navigator.mediaSession.setActionHandler('play', () => {
         simulateClick("PlayButton"); // Simulates a click on the Play button
-        if(stubAudio.playedLast) stubAudio.play(); // Immediately play stubAudio so OSD updated immediately.
+        if (stubAudio.playedLast) stubAudio.play(); // Immediately play stubAudio so OSD updated immediately.
         // Note: pageAudio starts-stops-starts if we try to call its play() directly.
         navigator.mediaSession.playbackState = "playing"; // Updates the media session's playback state to 'playing'.
     });
@@ -188,7 +188,7 @@ function setupMediaSessionEventHandlers(stubAudio) {
     // Set action handler for 'pause' action
     navigator.mediaSession.setActionHandler('pause', () => {
         simulateClick("PlayButton"); // Simulates a click on the Pause button
-        if(stubAudio.playedLast) stubAudio.pause(); // Immediately pause stubAudio so OSD updated immediately.
+        if (stubAudio.playedLast) stubAudio.pause(); // Immediately pause stubAudio so OSD updated immediately.
         navigator.mediaSession.playbackState = "paused"; // Updates the media session's playback state to 'paused'.
     });
 
