@@ -25,6 +25,8 @@ There are two ways to install the script.
   * Install [ViolentMonkey](https://chrome.google.com/webstore/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag), or [TamperMonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo).
 * Edge Users: 
   * Install [ViolentMonkey](https://microsoftedge.microsoft.com/addons/detail/violentmonkey/eeagobfjdenkkddmbclomhiblgggliao?hl=en-US), or [TamperMonkey](https://microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd?hl=en-US).
+* Opera Users:
+  * Install [TamperMonkey](https://addons.opera.com/en/extensions/details/tampermonkey-beta/).
 * Firefox Users
   * Install [GreaseMonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/), or [ViolentMonkey](https://addons.mozilla.org/en-US/firefox/addon/violentmonkey/), or [TamperMonkey](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/).
  
