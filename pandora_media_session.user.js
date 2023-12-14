@@ -119,32 +119,37 @@ function getText(cls) {
  *
  * This function extracts music information such as the title, artist, album, and artwork from the DOM elements
  * identified by specific class names. It then updates the media session's metadata with this information. If higher
- * quality artwork is available, it replaces the existing artwork URL with the higher resolution version. The media
- * session metadata is updated only if it does not already exist or if any of the music information has changed.
+ * quality artwork is available, it replaces the existing artwork URL with the higher resolution version.
  */
-function updateMetadata() {
-    // Retrieve music information from the DOM
-    let title = getText('Tuner__Audio__TrackDetail__title');
-    let artist = getText('Tuner__Audio__TrackDetail__artist');
-    let album = getText('nowPlayingTopInfo__current__albumName');
-    let art = getArt('Tuner__Audio__TrackDetail__img');
+const updateMetadata = (function () {
+    let isEvenCall = true;
 
-    // Attempt to get higher quality artwork if available
-    if (art) art = art.replace("90W", "500W").replace("90H", "500H");
+    return function () {
+        // Retrieve music information from the DOM
+        let title = getText('Tuner__Audio__TrackDetail__title');
+        let artist = getText('Tuner__Audio__TrackDetail__artist');
+        let album = getText('nowPlayingTopInfo__current__albumName');
+        let art = getArt('Tuner__Audio__TrackDetail__img');
 
-    // Populate and update media session metadata
-    let metadata = navigator.mediaSession.metadata;
-    if (!metadata || (
-        metadata.title !== title || metadata.artist !== artist ||
-        metadata.album !== album || metadata.artwork[0]?.src !== art)) {
+        // Attempt to get higher quality artwork if available
+        if (art) art = art.replace("90W", "500W").replace("90H", "500H");
+
+        // Append a space to the title every other call to force browsers to update the metadata. This is a work-around 
+        // for chromium based browsers which don't always update displayed metadata when the browser is not in focus.
+        title += isEvenCall ? "" : " ";
+
+        // Update the media session metadata
         navigator.mediaSession.metadata = new MediaMetadata({
             title: title,
             artist: artist,
             album: album,
-            artwork: [{ src: art, sizes: '500x500', type: 'image/jpeg' }]
+            artwork: [{ src: art, sizes: '500x500', type: 'image/jpeg' }],
         });
-    }
-}
+
+        // Toggle isEvenCall for the next invocation
+        isEvenCall = !isEvenCall;
+    };
+})();
 
 /**
  * Simulates a click event on the first element of a given class.
@@ -262,8 +267,8 @@ function initialize() {
         addPlayEventListenerToPageAudio(node, stubAudio);
     });
 
-    // Periodically updates media metadata
-    setInterval(updateMetadata, 100);
+    // Periodically updates media metadata at 1s interval (avoids flickering).
+    setInterval(updateMetadata, 1000);
 
     // Sets up media session event handlers
     setupMediaSessionEventHandlers(stubAudio);
