@@ -25,63 +25,64 @@ function isPlayingPageAudio() {
 }
 
 /**
- * Attaches a 'play' event listener to the stub audio element.
+ * Checks if any audio is currently playing on the page.
  *
- * When the stub audio attempts to play, this listener marks the stub audio element with a custom property indicating it
- * was the last source of audio played.
- *
- * @param {HTMLAudioElement} stubAudio - The stub audio element whose playback state will be modified.
+ * This function searches for an element with the class name "PlayButton" and checks its 'data-qa' attribute. The
+ * presence of a "PlayButton" with a 'data-qa' attribute value of "pause_button" indicates that audio is currently
+ * playing, as the button in this state is used to pause the audio.
+ * 
+ * @returns {boolean} True if an element indicating playing audio is found, false otherwise.
  */
-function addPlayEventListenerToStubAudio(stubAudio) {
-    stubAudio.addEventListener("play", () => {
-        stubAudio.playedLast = true; // Mark the stub audio as played last
-    });
+function isPlayingSomeAudio() {
+    // Fetch all elements with the class "PlayButton"
+    var e = document.getElementsByClassName("PlayButton");
+
+    // Check if the first element exists and its 'data-qa' attribute is "pause_button"
+    return e && e[0] && e[0].getAttribute('data-qa') == "pause_button";
 }
 
 /**
- * Attaches a 'play' event listener to a given page audio element.
+ * Attaches a set of event listeners to a specified audio element to monitor various state changes.
  *
- * When the 'play' event is emitted, this listener pauses the stub audio to ensure it does not interfere with the
- * playback of the page audio. This is a workaround for an issue in Chrome-based browsers where multiple active media
- * sessions in a single tab can stop the On-Screen Display (OSD) for media sessions from appearing. It also marks the
- * stub audio as not being the last played source.
+ * This function adds listeners for a wide range of audio-related events to the provided audio element. When any of
+ * these events occur, a callback function is executed, updating the state of the stubAudio and pausing it in order to
+ * synchronize the state of the stubAudio with the state of the page's primary audio element. If the stub audio was the
+ * last played, the media session metadata is reset to ensure the media session in chromium-based browsers updates 
+ * correctly.
  *
- * @param {HTMLAudioElement} pageAudio - The page audio element to which the play event listener is attached.
- * @param {HTMLAudioElement} stubAudio - The stub audio element whose playback state will be modified.
+ * This is a workaround to address a specific issue with chromium-based browsers. In these browsers, the media session
+ * tends to stop displaying if multiple audio elements play simultaneously within a single tab. To prevent this, the
+ * function ensures that whenever a page audio event occurs, the stub audio is immediately paused and a variable named
+ * `lastPageAudioEventTime` is set with the current time. Users of this function should always ensure that at least 1
+ * second has passed since the last page audio event occurred before calling stubAudio.play(). Additionally, if the 
+ * stubAudio was the last audio played, the media session's metadata is reset to null to prompt a media session reset.
+ *
+ * @param {HTMLAudioElement} audio - The audio element to which the event listeners will be attached.
+ * @param {HTMLAudioElement} stubAudio - The stub audio element whose state will be updated in response to audio events.
  */
-
-function addPlayEventListenerToPageAudio(pageAudio, stubAudio) {
-    pageAudio.addEventListener('play', () => {
-        stubAudio.playedLast = false; // Mark the stub audio as not played last
-        stubAudio.pause(); // Prevent the stub audio from playing simultaneously with the page audio.
-    });
-}
-
-/**
- * Updates the playback state of the stub audio based on the attributes of a given element.
- *
- * This function checks the 'data-qa' attribute of the specified DOM element. If the attribute's value is 'play_button',
- * the stub audio attempts to play, provided no other audio on the page is currently playing. If any other audio is 
- * playing, or the 'data-qa' attribute value is not 'play_button', the stub audio is paused. This function also updates 
- * the browser's media session playback state to either "playing" or "paused" depending on the action taken. This 
- * dynamic control mechanism allows the stub audio's playback to be responsive to user interactions and changes within 
- * the DOM.
- *
- * @param {Element} element - The DOM element whose attributes are checked to determine the audio state.
- * @param {HTMLAudioElement} stubAudio - The stub audio element whose playback state will be modified.
- */
-
-function updateStubAudioState(element, stubAudio) {
-    // Play or pause the stub audio based on the 'data-qa' attribute value of the element
-    if (element.getAttribute('data-qa') === 'play_button') {
-        if (!isPlayingPageAudio()) {
-            stubAudio.play(); // Play if no other audio is playing
+function addStateChangeEventListenerstoPageAudio(audio, stubAudio) {
+    // Callback to execute when any audio event occurs
+    var stateChangeCallback = () => {
+        // Record the time of the last page audio event
+        if (stubAudio.lastPlayed) { // if we are going to pause stub and it was the played last.
+            navigator.mediaSession.metadata = null; // Reset metadata to reset media session in chromium-based browsers.
         }
-        navigator.mediaSession.playbackState = "playing";
-    } else {
+        stubAudio.lastPageAudioEventTime = Date.now();
+        stubAudio.lastPlayed = false;
+
+        // Pause the stub audio to avoid conflicts or overlapping with the main audio
         stubAudio.pause();
-        navigator.mediaSession.playbackState = "paused";
-    }
+    };
+
+    // List of audio events to monitor
+    const audioEvents = [
+        "audioprocess", "abort", "canplay", "canplaythrough", "complete", "durationchange", "emptied", "ended", "error",
+        "loadeddata", "loadedmetadata", "loadstart", "pause", "play", "playing", "ratechange", "progress", "ratechange",
+        "resize", "seeked", "seeking", "stalled", "suspend", "timeupdate", "volumechange", "waiting"
+    ];
+
+    // Attach the state change callback to each event type on the audio element
+    audioEvents.forEach(event => { audio.addEventListener(event, stateChangeCallback); });
 }
 
 /**
@@ -152,6 +153,47 @@ const updateMetadata = (function () {
 })();
 
 /**
+ * Updates the playback state of the stub audio based on the current audio playback state on the page.
+ *
+ * This function first updates the media session playback state to "playing" or "paused" based on whether any audio is
+ * currently playing on the page, as determined by the 'isPlayingSomeAudio' function. 
+ *
+ * It then checks whether at least 1 second has elapsed since the last event on any page audio element. If less than 1
+ * second has passed, it exits without making further changes to the stub audio. This delay is a workaround for
+ * chromium-based browsers, where the media session may stop displaying if multiple audio elements play simultaneously
+ * within a single tab.
+ *
+ * If the required time has elapsed, the stub audio is either played or paused based on the current audio state of the
+ * page, and whether any other audio is playing. Additionally, if the stub audio is about to play and it was not the
+ * last played audio, the media session's metadata is reset to prompt an update in the media session display.
+ *
+ * @param {HTMLAudioElement} stubAudio - The stub audio element whose playback state will be modified.
+ */
+function updateStubAudioState(stubAudio) {
+    // Update the media session playback state based on the current audio playback state on the page
+    let isPlaying = isPlayingSomeAudio();
+    if (isPlaying) {
+        navigator.mediaSession.playbackState = "playing";
+    } else {
+        navigator.mediaSession.playbackState = "paused";
+    }
+
+    // Check if at least 1 second has passed since the last page audio event
+    if ((Date.now() - stubAudio.lastPageAudioEventTime) < 1000) return;
+
+    // Play or pause the stub audio based on the audio playback state and the last played status
+    if (isPlaying && !isPlayingPageAudio()) {
+        if (!stubAudio.lastPlayed) { // if we are going to play stub but it wasn't played last.
+            navigator.mediaSession.metadata = null; // Reset metadata to reset media session in chromium-based browsers.
+        }
+        stubAudio.play(); // Play if no other audio is playing
+        stubAudio.lastPlayed = true; // set as last played (1 second interval passed).
+    } else {
+        stubAudio.pause();
+    }
+}
+
+/**
  * Simulates a click event on the first element of a given class.
  *
  * This function creates a new 'click' MouseEvent and dispatches it on the first element found with the specified class
@@ -177,15 +219,22 @@ function simulateClick(cls) {
  * This function configures the action handlers for the browser's media session, enabling control over audio playback
  * through standard media controls such as play, pause, previous track, and next track. The play and pause actions are
  * linked to simulated click events on specific DOM elements representing these controls, allowing integration with
- * custom audio controls on the web page. Additionally, it directly controls the playback of the last played audio
- * element to synchronize the on-screen display (OSD) with user interactions. Handlers for previous and next tracks
- * trigger corresponding simulated clicks on relevant buttons.
+ * custom audio controls on the web page. Additionally, it directly controls the playback of the stub audio element to
+ * synchronize the on-screen display (OSD) with user interactions. Handlers for previous and next tracks trigger
+ * corresponding simulated clicks on relevant buttons.
+ *
+ * An important aspect of this setup is the immediate play or pause of the stub audio when it is 'safe' to do so (i.e.,
+ * when at least 1 second has passed since the last page audio event). This approach ensures that the OSD updates
+ * immediately and remains responsive to user clicks. The delay check is a workaround for chromium-based browsers where
+ * simultaneous playback of multiple audio elements might cause media session display issues.
  */
 function setupMediaSessionEventHandlers(stubAudio) {
     // Set action handler for 'play' action
     navigator.mediaSession.setActionHandler('play', () => {
         simulateClick("PlayButton"); // Simulates a click on the Play button
-        if (stubAudio.playedLast) stubAudio.play(); // Immediately play stubAudio so OSD updated immediately.
+        if (stubAudio.lastPlayed) { // Only if last played to avoid timing conflicts in chromium-based browsers.
+            stubAudio.play(); // Immediately play stubAudio so OSD updates immediately.
+        }
         // Note: pageAudio starts-stops-starts if we try to call its play() directly.
         navigator.mediaSession.playbackState = "playing"; // Updates the media session's playback state to 'playing'.
     });
@@ -193,7 +242,7 @@ function setupMediaSessionEventHandlers(stubAudio) {
     // Set action handler for 'pause' action
     navigator.mediaSession.setActionHandler('pause', () => {
         simulateClick("PlayButton"); // Simulates a click on the Pause button
-        if (stubAudio.playedLast) stubAudio.pause(); // Immediately pause stubAudio so OSD updated immediately.
+        stubAudio.pause(); // Immediately pause stubAudio so OSD updates immediately.
         navigator.mediaSession.playbackState = "paused"; // Updates the media session's playback state to 'paused'.
     });
 
@@ -234,10 +283,8 @@ function initialize() {
     stubAudio.loop = true;
     stubAudio.volume = 0.1;
     stubAudio.src = "data:audio/ogg;base64,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";
-    stubAudio.playedLast = false; // set played last to false.
-
-    // Attach a custom play event listener to stubAudio.
-    addPlayEventListenerToStubAudio(stubAudio);
+    stubAudio.lastPageAudioEventTime = Date.now(); // keep track of last time page audio played.
+    stubAudio.lastPlayed = false; // set played last to false.
 
     // Set up a MutationObserver to monitor DOM changes for audio playback.
     let observer = new MutationObserver(mutations => {
@@ -246,14 +293,7 @@ function initialize() {
             mutation.addedNodes.forEach(node => {
                 if (node.nodeName === 'AUDIO') {
                     // Attach a custom play event listener to all new audio elements
-                    addPlayEventListenerToPageAudio(node, stubAudio);
-                }
-            });
-
-            // Check for removed 'PlayButton' elements to trigger an audio state update
-            mutation.removedNodes.forEach(node => {
-                if (node.nodeName === 'BUTTON' && node.classList.contains('PlayButton')) {
-                    updateStubAudioState(node, stubAudio);
+                    addStateChangeEventListenerstoPageAudio(node, stubAudio);
                 }
             });
         });
@@ -264,11 +304,14 @@ function initialize() {
 
     // Attach a custom play event listener to all existing audio elements
     document.querySelectorAll('audio').forEach(node => {
-        addPlayEventListenerToPageAudio(node, stubAudio);
+        addStateChangeEventListenerstoPageAudio(node, stubAudio);
     });
 
     // Periodically updates media metadata at 1s interval (avoids flickering).
     setInterval(updateMetadata, 1000);
+
+    // Periodically updates stub audio state at 100ms intervals (to capture play/pause changes).
+    setInterval(() => updateStubAudioState(stubAudio), 100);
 
     // Sets up media session event handlers
     setupMediaSessionEventHandlers(stubAudio);
