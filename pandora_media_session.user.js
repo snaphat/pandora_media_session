@@ -222,23 +222,23 @@ function simulateClick(cls) {
  * custom audio controls on the web page.
  *
  * To address a race condition in Firefox where rapid, programmatic click events can cause playback issues, a delay
- * check is included. This check ensures that at least 500 milliseconds have passed since the last media session event
+ * check is included. This check ensures that at least 200 milliseconds have passed since the last media session event
  * before simulating another click. While this delay improves reliability in Firefox, it also means that the On-Screen
  * Display (OSD) updates are not immediate and are dependent on the timing of these simulated clicks.
  */
 function setupMediaSessionEventHandlers(stubAudio) {
     // Set action handler for 'play' action
     navigator.mediaSession.setActionHandler('play', () => {
-        // Check if at least 500ms has passed since the last media session click
-        if ((Date.now() - stubAudio.lastMediaSessionEventTime) < 500) return;
+        // Check if at least 200ms has passed since the last media session click
+        if ((Date.now() - stubAudio.lastMediaSessionEventTime) < 200) return;
         stubAudio.lastMediaSessionEventTime = Date.now();
         simulateClick("PlayButton"); // Simulates a click on the Play button
     });
 
     // Set action handler for 'pause' action
     navigator.mediaSession.setActionHandler('pause', () => {
-        // Check if at least 500ms has passed since the last media session click
-        if ((Date.now() - stubAudio.lastMediaSessionEventTime) < 500) return;
+        // Check if at least 200ms has passed since the last media session click
+        if ((Date.now() - stubAudio.lastMediaSessionEventTime) < 200) return;
         stubAudio.lastMediaSessionEventTime = Date.now();
         simulateClick("PlayButton"); // Simulates a click on the Pause button
     });
