@@ -134,17 +134,27 @@ const updateMetadata = (function () {
 
         // Attempt to get higher quality artwork if available
         if (art) art = art.replace("90W", "500W").replace("90H", "500H");
+        let artwork = [{ src: art, sizes: '500x500', type: 'image/jpeg' }];
 
-        // Append a space to the title every other call to force browsers to update the metadata. This is a work-around
-        // for chromium based browsers which don't always update displayed metadata when the browser is not in focus.
-        title += isEvenCall ? "" : " ";
+        // Append a space to the title, artist, and album every other call, and duplicate the artwork entry in the array.
+        // These actions are individual workarounds to ensure that each piece of media metadata (title, artist, album,
+        // and artwork) updates correctly. This approach addresses issues in chromium-based browsers, where the displayed
+        // metadata does not always update, especially when the browser is not in focus. By making slight alterations
+        // to the metadata fields, the browser is more likely to recognize these changes and update the media session
+        // display accordingly.
+        if (!isEvenCall) {
+            title += " ";
+            artist += " ";
+            album += " ";
+            artwork[1] = artwork[0]; // Duplicate the artwork entry to reinforce the metadata update
+        }
 
         // Update the media session metadata
         navigator.mediaSession.metadata = new MediaMetadata({
             title: title,
             artist: artist,
             album: album,
-            artwork: [{ src: art, sizes: '500x500', type: 'image/jpeg' }],
+            artwork: artwork
         });
 
         // Toggle isEvenCall for the next invocation
