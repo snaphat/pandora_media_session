@@ -6,7 +6,7 @@ Extension and userscript implementing the [Web Media Session API](https://develo
 - Supports showing the song title, artist, album, and album art.
 
 There are two ways to install the script.
-* As an [extension](#extension-installation) for [Chrome](https://chrome.google.com/webstore/detail/pandora-media-session-sup/odjlgdgkahiehepabfdddaapbdficekj), [Edge](https://microsoftedge.microsoft.com/addons/detail/ikjcpnihjpkdjgaocoicbacehipaaecc), and [Firefox](https://addons.mozilla.org/en-US/firefox/addon/pandora_media_session_support/), or via [unpacked installation](https://github.com/snaphat/pandora_media_session_packager/releases).
+* As an [extension](#extension-installation) for [Chrome](https://chrome.google.com/webstore/detail/pandora-media-session-sup/odjlgdgkahiehepabfdddaapbdficekj), [Edge](https://microsoftedge.microsoft.com/addons/detail/ikjcpnihjpkdjgaocoicbacehipaaecc), [Opera](https://chrome.google.com/webstore/detail/pandora-media-session-sup/odjlgdgkahiehepabfdddaapbdficekj) and [Firefox](https://addons.mozilla.org/en-US/firefox/addon/pandora_media_session_support/), or via [unpacked installation](https://github.com/snaphat/pandora_media_session_packager/releases).
 * As a [userscript](#userscript-installation).
 
 ## Extension Installation
@@ -15,7 +15,7 @@ There are two ways to install the script.
 * Edge Users:
   * Click [here](https://microsoftedge.microsoft.com/addons/detail/ikjcpnihjpkdjgaocoicbacehipaaecc) to install from the Edge-Addons website.
 * Opera Users:
-  * Click [here]() to install from the Opera-Addons website. 
+  * Click [here](https://chrome.google.com/webstore/detail/pandora-media-session-sup/odjlgdgkahiehepabfdddaapbdficekj) to install from the Chrome Web Store website.
 * Firefox Users:
   * Click [here](https://addons.mozilla.org/en-US/firefox/addon/pandora_media_session_support/) to install from the Firefox-Addons website.
 * Unpacked Extension:
